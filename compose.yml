@@ -3,22 +3,55 @@ services:
     image: redis:8.8.0-alpine
     container_name: redis
     restart: unless-stopped
-
     ports:
       - "6379:6379"
-
     volumes:
       - redis-data:/data
-
     command: >
       redis-server
       --appendonly yes
-
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
 
+  postgres:
+    image: postgres:15.4-alpine
+    container_name: postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: mydatabase
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgresql-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "myuser"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  label-studio:
+    image: heartexlabs/label-studio:latest
+    container_name: label-studio
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      DJANGO_DB: default
+      POSTGRE_HOST: postgres
+      POSTGRE_PORT: 5432
+      POSTGRE_NAME: mydatabase
+      POSTGRE_USER: myuser
+      POSTGRE_PASSWORD: mypassword
+      
+      # การเชื่อมต่อ Redis
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+
 volumes:
   redis-data:
+  postgresql-data:
