@@ -3,3 +3,8 @@
 
 sandbox/
 core/__pycache__/
+
+logs/
+
+utils/__pycache__/
+utils/logger/__pycache__/

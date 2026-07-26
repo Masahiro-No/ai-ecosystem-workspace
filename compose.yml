@@ -1,4 +1,9 @@
+version: '3.8'
+
 services:
+  # -------------------------
+  # ส่วนของ Redis
+  # -------------------------
   redis:
     image: redis:8.8.0-alpine
     container_name: redis
@@ -7,15 +12,22 @@ services:
       - "6379:6379"
     volumes:
       - redis-data:/data
-    command: >
-      redis-server
-      --appendonly yes
+      - ./logs:/logs
+    command: sh -c "redis-server --appendonly yes 2>&1 | tee /logs/redis.log"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
+  # -------------------------
+  # ส่วนของ PostgreSQL
+  # -------------------------
   postgres:
     image: postgres:15.4-alpine
     container_name: postgres
@@ -28,12 +40,22 @@ services:
       - "5432:5432"
     volumes:
       - postgresql-data:/var/lib/postgresql/data
+      - ./logs:/logs
+    command: postgres -c logging_collector=on -c log_directory=/logs -c log_filename=postgres.log
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "myuser"]
+      test: ["CMD", "pg_isready", "-U", "myuser", "-d", "mydatabase"]
       interval: 10s
       timeout: 5s
       retries: 5
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
+  # -------------------------
+  # ส่วนของ Label Studio
+  # -------------------------
   label-studio:
     image: heartexlabs/label-studio:latest
     container_name: label-studio
@@ -47,23 +69,46 @@ services:
       POSTGRE_NAME: mydatabase
       POSTGRE_USER: myuser
       POSTGRE_PASSWORD: mypassword
-      
-      # การเชื่อมต่อ Redis
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      LOG_DIR: /logs
+    volumes:
+      - ./logs:/logs
+    # [แก้ไขตรงนี้] บังคับดัก Log หน้าจอเขียนลงไฟล์ label_studio.log
+    command: sh -c "label-studio start 2>&1 | tee /logs/label_studio.log"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
+  # -------------------------
+  # ส่วนของ MinIO
+  # -------------------------
+  # -------------------------
+  # ส่วนของ MinIO
+  # -------------------------
   minio:
     image: minio/minio:latest
     container_name: minio_service
     ports:
-      - "9000:9000" # Port สำหรับ API
-      - "9001:9001" # Port สำหรับ Web UI (Console)
+      - "9000:9000" 
+      - "9001:9001" 
     environment:
       MINIO_ROOT_USER: "admin"
       MINIO_ROOT_PASSWORD: "password"
     volumes:
       - ./minio_data:/data
-    command: server /data --console-address ":9001"
+      - ./logs:/logs
+    # [จุดสำคัญ] ต้องปลดล็อค Entrypoint ของ MinIO ออกก่อน
+    entrypoint: /bin/sh
+    # แล้วค่อยสั่งรันผ่าน -c พร้อมบังคับ tee ลงไฟล์
+    command: -c "minio server /data --console-address ':9001' 2>&1 | tee /logs/minio.log"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 volumes:
   redis-data:
