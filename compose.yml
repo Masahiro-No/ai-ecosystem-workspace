@@ -52,6 +52,20 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
 
+  minio:
+    image: minio/minio:latest
+    container_name: minio_service
+    ports:
+      - "9000:9000" # Port สำหรับ API
+      - "9001:9001" # Port สำหรับ Web UI (Console)
+    environment:
+      MINIO_ROOT_USER: "admin"
+      MINIO_ROOT_PASSWORD: "password"
+    volumes:
+      - ./minio_data:/data
+    command: server /data --console-address ":9001"
+
 volumes:
   redis-data:
   postgresql-data:
+  minio_data:
