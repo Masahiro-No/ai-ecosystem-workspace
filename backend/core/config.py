@@ -1,10 +1,16 @@
+import os
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ENV_PATH = os.path.join(ROOT_DIR, ".env")
 
 class Settings(BaseSettings):
     """Application settings."""
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
+    # ระบุ env_file เป็น ENV_PATH แทนการใช้แค่ ".env"
+    model_config = SettingsConfigDict(env_file=ENV_PATH, env_file_encoding="utf-8")
 
     database_url: str
+    label_studio_url: str
     label_studio_api_key: str
     minio_endpoint: str
     minio_access_key: str
