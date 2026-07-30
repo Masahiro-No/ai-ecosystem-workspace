@@ -7,6 +7,8 @@ ENV_PATH = os.path.join(ROOT_DIR, ".env")
 class Settings(BaseSettings):
     """Application settings."""
     # ระบุ env_file เป็น ENV_PATH แทนการใช้แค่ ".env"
+    APP_NAME: str = "FastAPI Application"
+    DEBUG_MODE: bool = True
     model_config = SettingsConfigDict(env_file=ENV_PATH, env_file_encoding="utf-8")
 
     database_url: str
@@ -15,3 +17,8 @@ class Settings(BaseSettings):
     minio_endpoint: str
     minio_access_key: str
     minio_secret_key: str
+    jwt_secret_key: str
+    jwt_algorithm: str
+    access_token_expire_minutes: int
+
+settings = Settings()
