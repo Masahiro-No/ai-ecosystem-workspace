@@ -33,6 +33,13 @@ class AuthRepository:
         await self.session.refresh(user)
         return user
 
+    async def update_user_password(self, user: User, password_hash: str) -> User:
+        user.password_hash = password_hash
+        await self.session.commit()
+        await self.session.refresh(user)
+        return user
+
     async def delete_user(self, user: User) -> None:
         await self.session.delete(user)
-        await self.session.commit()
+        await self.session.commit()
+

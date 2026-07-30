@@ -44,13 +44,19 @@ async def update_user(
     if user is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
-    # ตรวจว่า email ใหม่ซ้ำกับคนอื่นไหม
-    existing = await repo.get_user_by_email(payload.email)
-    if existing is not None and existing.id != user_id:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email is already taken")
+    if payload.email is not None:
+        existing = await repo.get_user_by_email(payload.email)
+        if existing is not None and existing.id != user_id:
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email is already taken")
+        user = await repo.update_user_email(user, payload.email)
 
-    updated = await repo.update_user_email(user, payload.email)
-    return UserResponse.model_validate(updated)
+    if payload.password is not None:
+        from api.auth.service import password_hash as ph
+        hashed = ph.hash(payload.password)
+        user = await repo.update_user_password(user, hashed)
+
+    return UserResponse.model_validate(user)
+
 
 
 async def delete_user(
