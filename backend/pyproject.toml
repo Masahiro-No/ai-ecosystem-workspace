@@ -11,11 +11,13 @@ dependencies = [
     "fastapi>=0.115.0",
     "label-studio-sdk>=2.1.0",
     "minio>=7.2.20",
+    "openpyxl>=3.1.0",
     "psycopg2-binary>=2.9.12",
     "pwdlib[argon2]>=0.2.1",
     "pydantic>=2.13.4",
     "pydantic-settings>=2.14.2",
     "pyjwt>=2.10.0",
+    "python-multipart>=0.0.32",
     "sqlalchemy>=2.0.51",
     "uvicorn[standard]>=0.32.0",
 ]
