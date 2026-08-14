@@ -20,5 +20,7 @@ class Settings(BaseSettings):
     jwt_secret_key: str
     jwt_algorithm: str
     access_token_expire_minutes: int
+    redis_host: str = "localhost"
+    redis_port: int = 6379
 
 settings = Settings()
